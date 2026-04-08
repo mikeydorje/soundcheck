@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Soundcheck — Master Analysis</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+</head>
+<body>
+  <header>
+    <div class="app-title">SOUNDCHECK</div>
+    <p class="subtitle">master consistency analysis</p>
+  </header>
+
+  <main>
+    <section class="upload-section" id="uploadSection">
+      <div id="uploadArea">
+        <label for="fileInput" class="file-label">Select Audio Files</label>
+        <input type="file" id="fileInput" multiple accept="audio/*">
+      </div>
+      <div id="filesLoadedArea" class="hidden">
+        <div class="files-loaded-row">
+          <span id="fileCount"></span>
+          <button id="resetBtn" class="reset-btn">Reset</button>
+        </div>
+      </div>
+      <p id="status"></p>
+    </section>
+
+    <section id="tracklistSection" class="hidden">
+      <h2>Track Order</h2>
+      <p class="tracklist-hint">Drag to reorder tracks for album analysis</p>
+      <p class="analyzing-heading">Analyzing…</p>
+      <ol id="tracklist"></ol>
+      <label id="skipAlbumLabel" class="skip-album-label hidden">
+        <input type="checkbox" id="skipAlbumAnalysis">
+        <span>Skip album analysis</span>
+      </label>
+    </section>
+
+    <section id="analyzeSection" class="hidden">
+      <button id="analyzeBtn">Analyze</button>
+    </section>
+
+    <section id="resultsSection" class="hidden">
+      <div class="results-header">
+        <h2>Results</h2>
+        <button id="downloadZipBtn" class="action-btn" title="Download charts, data &amp; report as ZIP">&#8681; Export</button>
+      </div>
+      <div id="columnToggles" class="column-toggles"></div>
+      <div class="table-wrap">
+        <table id="resultsTable">
+          <thead id="resultsHead"></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <h2>Charts</h2>
+      <div class="chart-container">
+        <h3>Integrated LUFS — Streaming Platform Targets</h3>
+        <p class="chart-desc">Overall loudness per track measured to ITU-R BS.1770-4, with reference lines for major streaming platforms.</p>
+        <div id="lufsChart"></div>
+      </div>
+      <div class="chart-container">
+        <h3>Loudness Over Time (Momentary LUFS)</h3>
+        <p class="chart-desc">400 ms momentary loudness plotted across each track's duration — reveals dynamics, drops, and build-ups.</p>
+        <div id="loudnessTimeChart"></div>
+      </div>
+      <div class="chart-container">
+        <h3>Peak-to-Loudness Ratio (PLR)</h3>
+        <p class="chart-desc">Difference between peak level and integrated LUFS. Higher PLR means more preserved transients — lower means more limiting/compression.</p>
+        <div id="plrChart"></div>
+      </div>
+      <div class="chart-container">
+        <h3>Per-Band Crest Factor</h3>
+        <p class="chart-desc">Transient preservation measured separately in low, mid, and high bands. Shows whether your limiter is crushing one range more than others.</p>
+        <div id="perBandCrestChart"></div>
+      </div>
+      <div class="chart-container">
+        <h3>Bass Mono Compatibility</h3>
+        <p class="chart-desc">Stereo correlation in the 20–200 Hz range. Values below 0.9 risk phase cancellation on mono playback systems (clubs, phones).</p>
+        <div id="bassMonoChart"></div>
+      </div>
+      <div class="chart-container">
+        <h3>Bass Energy Over Time</h3>
+        <p class="chart-desc">Low-end RMS (20–200 Hz) plotted over each track's duration. Reveals bass consistency, drops, and problem sections.</p>
+        <div id="bassEnergyTimeChart"></div>
+      </div>
+      <div class="chart-container">
+        <h3>Low-End Spectral Detail (20–300 Hz)</h3>
+        <p class="chart-desc">High-resolution frequency curve zoomed into the bass region. Shows resonances, mud buildup (~200–300 Hz), and sub rolloff.</p>
+        <div id="bassSpectrumChart"></div>
+      </div>
+      <div class="chart-container">
+        <h3>Sub / Bass Energy Split</h3>
+        <p class="chart-desc">Proportional energy split between sub (20–60 Hz) and bass (60–200 Hz). Reveals whether low-end weight is sub-heavy or evenly distributed.</p>
+        <div id="subBassSplitChart"></div>
+      </div>
+      <div class="chart-container">
+        <h3>RMS Comparison</h3>
+        <p class="chart-desc">Average signal power (dBFS) per track. Consistent RMS across an EP or album helps maintain perceived volume balance.</p>
+        <div id="rmsChart"></div>
+      </div>
+      <div class="chart-container">
+        <h3>Spectral Comparison</h3>
+        <p class="chart-desc">Average frequency magnitude curves overlaid per track. Highlights tonal balance differences in the low, mid, and high ranges.</p>
+        <div id="spectralChart"></div>
+      </div>
+      <div class="chart-container">
+        <h3>Spectral Centroid Comparison</h3>
+        <p class="chart-desc">The "brightness" of each track — a higher centroid means more energy in the upper frequencies.</p>
+        <div id="centroidChart"></div>
+      </div>
+      <div class="chart-container">
+        <h3>Low / Mid / High Energy Ratios</h3>
+        <p class="chart-desc">Proportional energy split across sub-1 kHz, 1–4 kHz, and 4 kHz+ bands. Useful for checking EQ consistency.</p>
+        <div id="bandChart"></div>
+      </div>
+      <div class="chart-container">
+        <h3>Dynamic Range Profile</h3>
+        <p class="chart-desc">Radar view of key dynamics metrics — crest factor, LRA, stereo correlation — normalised for quick visual comparison.</p>
+        <div id="radarChart"></div>
+      </div>
+
+      <div id="albumSection" class="hidden">
+        <h2>Album Analysis</h2>
+        <div class="album-summary" id="albumSummary"></div>
+        <div class="chart-container">
+          <h3>Album Arc — Loudness &amp; Brightness by Track Order</h3>
+          <p class="chart-desc">Integrated LUFS and spectral centroid plotted in album order. Shows how loudness and tonal brightness flow across your tracklist.</p>
+          <div id="albumArcChart"></div>
+        </div>
+        <div class="chart-container">
+          <h3>Track-to-Track Loudness Jumps</h3>
+          <p class="chart-desc">LUFS delta between consecutive tracks. Large jumps may cause jarring volume shifts for the listener.</p>
+          <div id="trackJumpsChart"></div>
+        </div>
+        <div class="chart-container">
+          <h3>Album Consistency Radar</h3>
+          <p class="chart-desc">Normalised consistency scores across key metrics. Tighter shapes mean more cohesive mastering.</p>
+          <div id="albumRadarChart"></div>
+        </div>
+      </div>
+
+    </section>
+
+    <div class="info-lead">
+      <div class="info-block">
+        <h2>Quick Start</h2>
+        <p>Drop in your mastered files and hit <strong>Analyze</strong>. Soundcheck decodes everything in the browser and runs a full consistency check — loudness, dynamics, bass, stereo, silence tails — across all tracks at once.</p>
+        <h3>Album / Release Check</h3>
+        <p>Upload every track on a release to see how loudness, EQ, and dynamics flow across the full sequence. Drag tracks into album order and the album analysis will chart the arc, flag jumps between songs, and score overall cohesion.</p>
+        <h3>Reference Comparison</h3>
+        <p>Working on a single track? Upload it alongside a reference master to compare directly. Check <strong>Skip album analysis</strong> — you're not checking album flow, just seeing how your track stacks up against a target.</p>
+      </div>
+    </div>
+
+    <div class="info-grid">
+      <div class="info-block">
+        <h2>How It's Built</h2>
+        <p>Vanilla JavaScript, Web Audio API, and <strong>ApexCharts</strong>. No framework, no build step, no server. Analysis runs entirely in your browser — your audio never leaves your device.</p>
+        <p>No AI. No machine learning. Just FFT, loudness metering to ITU-R BS.1770-4, and straightforward signal math on static files.</p>
+      </div>
+      <div class="info-block">
+        <h2>Community</h2>
+        <p><strong>Free and open source.</strong> No signup, no paywall, no watermark. Use it however you like.</p>
+        <p>If Soundcheck is useful in your workflow, a follow at <strong><a href="https://instagram.com/mikeydorje" target="_blank" rel="noopener noreferrer">@mikeydorje</a></strong> is always appreciated — no need to tag or credit in posts.</p>
+        <p>Source on <strong><a href="https://github.com/mikeydorje/soundcheck" target="_blank" rel="noopener noreferrer">GitHub</a></strong>.</p>
+      </div>
+    </div>
+
+  </main>
+
+  <script src="main.js" defer></script>
+</body>
+</html>
