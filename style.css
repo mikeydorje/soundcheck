@@ -677,3 +677,43 @@ td.filename {
 #albumArcChart, #trackJumpsChart, #albumRadarChart {
   min-height: 300px;
 }
+
+/* ── Footer ── */
+.site-footer {
+  width: 100%;
+  max-width: 900px;
+  margin: 26px auto 30px;
+  padding: 0 24px;
+  text-align: center;
+  color: rgba(255,255,255,0.28);
+  font-size: 11px;
+  line-height: 1.6;
+}
+.footer-socials {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.footer-social {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.1);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255,255,255,0.45);
+  text-decoration: none;
+  transition: all 0.25s;
+  background: rgba(255,255,255,0.01);
+}
+.footer-social:hover {
+  color: rgba(255,255,255,0.85);
+  border-color: rgba(255,255,255,0.25);
+  background: rgba(255,255,255,0.06);
+  transform: translateY(-2px);
+}
+.footer-social svg { width: 15px; height: 15px; }
+.footer-copy strong { color: rgba(255,255,255,0.48); font-weight: 600; }
