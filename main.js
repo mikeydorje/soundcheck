@@ -1850,7 +1850,7 @@ function drawPLRChart(labels, data) {
     annotations: {
       yaxis: [
         { y: 12, y2: 18, fillColor: 'rgba(63,185,80,0.08)', strokeDashArray: 0,
-          label: { text: 'Good transient range (12–18 dB)', style: { color: '#0e1117', background: '#3fb950', fontSize: '10px' }, position: 'front', offsetX: 80 } },
+          label: { text: 'Typical range (12–18 dB)', style: { color: '#0e1117', background: '#3fb950', fontSize: '10px' }, position: 'front', offsetX: 80 } },
       ],
     },
   };
